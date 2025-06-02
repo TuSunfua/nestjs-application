@@ -8,7 +8,7 @@ import { addTransactionalDataSource } from 'typeorm-transactional';
 
 // import { AuthModule } from './modules/auth/auth.module.ts';
 // import { PostModule } from './modules/post/post.module.ts';
-// import { UserModule } from './modules/user/user.module.ts';
+import { UserModule } from '@/modules/user/user.module';
 import { ApiConfigService } from '@/shared/services/api-config.service';
 import { SharedModule } from '@/shared/shared.module';
 
@@ -43,6 +43,8 @@ import { SharedModule } from '@/shared/shared.module';
                 return Promise.resolve(addTransactionalDataSource(new DataSource(options)));
             },
         }),
+        UserModule,
+        // AuthModule,
     ],
     providers: [],
 })

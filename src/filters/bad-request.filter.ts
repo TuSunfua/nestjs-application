@@ -1,5 +1,5 @@
 import type { ArgumentsHost, ExceptionFilter } from '@nestjs/common';
-import { Catch, HttpStatus, UnprocessableEntityException } from '@nestjs/common';
+import { Catch, UnprocessableEntityException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import type { Request, Response } from 'express';
 import type { ValidationError } from 'class-validator';

@@ -3,8 +3,6 @@ import type { ApiPropertyOptions } from '@nestjs/swagger';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
-    ArrayMaxSize,
-    ArrayMinSize,
     IsBoolean,
     IsDate,
     IsDefined,
@@ -28,8 +26,6 @@ import type { Constructor } from '@/types';
 import { ApiEnumProperty, ApiUUIDProperty } from '@/decorators/property.decorators';
 import { PhoneNumberSerializer, ToArray, ToBoolean, ToLowerCase, ToUpperCase } from '@/decorators/transform.decorators';
 import { IsNullable, IsPassword, IsPhoneNumber, IsTmpKey as IsTemporaryKey, IsUndefinable } from '@/decorators/validator.decorators';
-
-type RequireField<T, K extends keyof T> = T & Required<Pick<T, K>>;
 
 interface IFieldOptions {
     each?: boolean;
@@ -192,7 +188,6 @@ export function TmpKeyFieldOptional(options: Omit<ApiPropertyOptions, 'type' | '
     return applyDecorators(IsUndefinable(), TmpKeyField({ required: false, ...options }));
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 export function EnumField<TEnum extends object>(
     getEnum: () => TEnum,
     options: Omit<ApiPropertyOptions, 'type' | 'enum' | 'enumName' | 'isArray'> & IEnumFieldOptions = {},
@@ -217,7 +212,6 @@ export function EnumField<TEnum extends object>(
     return applyDecorators(...decorators);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 export function ClassField<TClass extends Constructor>(
     getClass: () => TClass,
     options: Omit<ApiPropertyOptions, 'type'> & IClassFieldOptions = {},
@@ -252,7 +246,6 @@ export function ClassField<TClass extends Constructor>(
     return applyDecorators(...decorators);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 export function EnumFieldOptional<TEnum extends object>(
     getEnum: () => TEnum,
     options: Omit<ApiPropertyOptions, 'type' | 'required' | 'enum' | 'enumName'> & IEnumFieldOptions = {},
@@ -260,7 +253,6 @@ export function EnumFieldOptional<TEnum extends object>(
     return applyDecorators(IsUndefinable(), EnumField(getEnum, { required: false, ...options }));
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 export function ClassFieldOptional<TClass extends Constructor>(
     getClass: () => TClass,
     options: Omit<ApiPropertyOptions, 'type' | 'required'> & IClassFieldOptions = {},

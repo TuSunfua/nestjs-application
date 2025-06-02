@@ -4,7 +4,7 @@ import { Brackets, SelectQueryBuilder } from 'typeorm';
 
 import type { AbstractEntity } from '@/common/abstract.entity';
 import { PageDto } from '@/common/dto/page.dto';
-import { AbstractDto } from '@/common/dto/abstact.dto';
+import { AbstractDto } from '@/common/dto/abstract.dto';
 import { PageMetaDto } from '@/common/dto/page-meta.dto';
 import type { PageOptionsDto } from '@/common/dto/page-options.dto';
 import type { KeyOfType } from '@/types';
