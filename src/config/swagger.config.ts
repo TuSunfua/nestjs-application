@@ -1,11 +1,26 @@
 import type { INestApplication } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
-import { appConfig } from '@/config/app.config';
-
 export function ConfigSwagger(app: INestApplication): void {
+    const configService = app.get(ConfigService);
+    const appName = configService.get<string>('APP_NAME', 'NestJS Application');
+    const apiPrefix = configService.get<string>('API_PREFIX', 'api');
+    const apiVersion = configService.get<string>('API_VERSION', 'v1');
+
     const documentBuilder = new DocumentBuilder()
-        .setTitle('API documentation for ' + appConfig.appName)
+        .setTitle('API documentation for ' + appName)
+        .setVersion(apiVersion)
+        .addServer(`/${apiPrefix}/${apiVersion}`)
+        .addBearerAuth(
+            {
+                type: 'http',
+                scheme: 'bearer',
+                bearerFormat: 'JWT',
+                in: 'header',
+            },
+            'access-token',
+        )
         .setDescription(
             `### REST
 
@@ -49,21 +64,13 @@ Routes is following REST standard (Richardson level 3)
       - The **<user_id>** have no access to **<resource_id>**
 </p>
 </details>`,
-        )
-        .addBearerAuth(
-            {
-                type: 'http',
-                scheme: 'bearer',
-                bearerFormat: 'JWT',
-                in: 'header',
-            },
-            'access-token',
         );
 
-    documentBuilder.setVersion(appConfig.apiVersion);
+    const document = SwaggerModule.createDocument(app, documentBuilder.build(), {
+        ignoreGlobalPrefix: true,
+    });
 
-    const document = SwaggerModule.createDocument(app, documentBuilder.build());
-    SwaggerModule.setup(`${appConfig.apiPrefix}/${appConfig.apiVersion}/docs`, app, document, {
+    SwaggerModule.setup(`${apiPrefix}/${apiVersion}/docs`, app, document, {
         swaggerOptions: {
             persistAuthorization: true,
         },

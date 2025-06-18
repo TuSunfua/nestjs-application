@@ -1,31 +1,39 @@
 import { HttpStatus, UnprocessableEntityException, ValidationPipe } from '@nestjs/common';
-import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { ExpressAdapter } from '@nestjs/platform-express';
+import { ConfigService } from '@nestjs/config';
+import { NestFactory } from '@nestjs/core';
 import * as compression from 'compression';
 import helmet from 'helmet';
 import * as morgan from 'morgan';
 import * as express from 'express';
 
 import { AppModule } from '@/app.module';
-import { appConfig } from '@/config/app.config';
 import { ConfigSwagger } from '@/config/swagger.config';
 import { GlobalExceptionFilter } from '@/filters/global-exception.filter';
 
 export async function bootstrap(): Promise<NestExpressApplication> {
-    const app = await NestFactory.create<NestExpressApplication>(AppModule, new ExpressAdapter(), {
-        cors: {
-            origin: appConfig.corsOrigins,
-            methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-            credentials: true,
-        },
+    const app = await NestFactory.create<NestExpressApplication>(AppModule, new ExpressAdapter());
+
+    const configService = app.get(ConfigService);
+    const port = configService.get<number>('PORT', 8080);
+    const corsOrigins = configService.get<string>('CORS_ORIGINS');
+    const apiPrefix = configService.get<string>('API_PREFIX', 'api');
+    const apiVersion = configService.get<string>('API_VERSION', 'v1');
+    const nodeEnv = configService.get<string>('NODE_ENV', 'development');
+
+    // Enable CORS with allowed methods
+    app.enableCors({
+        origin: corsOrigins ? corsOrigins.split(',').filter(Boolean) : '*',
+        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+        credentials: true,
     });
 
     app.enable('trust proxy'); // only if you're behind a reverse proxy (Heroku, Bluemix, AWS ELB, Nginx, etc)
     app.use(helmet());
-    app.setGlobalPrefix(`/${appConfig.apiPrefix}/${appConfig.apiVersion}`);
+    app.setGlobalPrefix(`${apiPrefix}/${apiVersion}`, { exclude: [] }); // Set global prefix for API routes
     app.use(compression());
-    if (appConfig.environment.isDevelopment) {
+    if (nodeEnv === 'development') {
         app.use(morgan('dev')); // Can change to 'combined' or 'common' for different logging formats
     }
     app.use(express.json({ limit: '10mb' }));
@@ -51,12 +59,12 @@ export async function bootstrap(): Promise<NestExpressApplication> {
 
     ConfigSwagger(app);
 
-    await app.listen(appConfig.port);
+    await app.listen(port);
     const url = await app.getUrl();
     // Replace [::1] or [::] (IPv6) with 127.0.0.1 for display
     const displayUrl = url.replace(/\[::1\]|\[::\]/, '127.0.0.1');
     console.info(`Application is running on: ${displayUrl}`);
-    console.info(`API documentation available at: ${displayUrl}${appConfig.apiPrefix}/${appConfig.apiVersion}/docs`);
+    console.info(`API documentation available at: ${displayUrl}${apiPrefix}/${apiVersion}/docs`);
 
     return app;
 }
