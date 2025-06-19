@@ -1,8 +1,8 @@
 import { HttpStatus, UnprocessableEntityException, ValidationPipe } from '@nestjs/common';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { ExpressAdapter } from '@nestjs/platform-express';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
-import { NestFactory } from '@nestjs/core';
 import * as compression from 'compression';
 import helmet from 'helmet';
 import * as morgan from 'morgan';
@@ -11,6 +11,8 @@ import * as express from 'express';
 import { AppModule } from '@/app.module';
 import { ConfigSwagger } from '@/config/swagger.config';
 import { GlobalExceptionFilter } from '@/filters/global-exception.filter';
+import { WhitelistGuard } from '@/guards/whitelist.guard';
+import { WhitelistService } from '@/modules/whitelist/whitelist.service';
 
 export async function bootstrap(): Promise<NestExpressApplication> {
     const app = await NestFactory.create<NestExpressApplication>(AppModule, new ExpressAdapter());
@@ -57,6 +59,9 @@ export async function bootstrap(): Promise<NestExpressApplication> {
         }),
     );
 
+    const reflector = app.get(Reflector);
+    app.useGlobalGuards(new WhitelistGuard(app.get(WhitelistService), reflector));
+
     ConfigSwagger(app);
 
     await app.listen(port);
@@ -64,7 +69,7 @@ export async function bootstrap(): Promise<NestExpressApplication> {
     // Replace [::1] or [::] (IPv6) with 127.0.0.1 for display
     const displayUrl = url.replace(/\[::1\]|\[::\]/, '127.0.0.1');
     console.info(`Application is running on: ${displayUrl}`);
-    console.info(`API documentation available at: ${displayUrl}${apiPrefix}/${apiVersion}/docs`);
+    console.info(`API documentation available at: ${displayUrl}/${apiPrefix}/${apiVersion}/docs`);
 
     return app;
 }

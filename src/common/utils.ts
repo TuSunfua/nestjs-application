@@ -23,6 +23,20 @@ export function validateHash(password: string | undefined, hash: string | undefi
     return bcrypt.compare(password, hash);
 }
 
+/**
+ * Extracts the variable or property name from a lambda function.
+ *
+ * @template TResult The return type of the lambda function.
+ * @param getVar A lambda function that returns the variable or property whose name is to be extracted.
+ * @returns The name of the variable or property as a string, or `undefined` if it cannot be determined.
+ * @throws {Error} If the function does not contain a statement matching 'return variableName;'.
+ *
+ * @example
+ * ```typescript
+ * const myVar = 42;
+ * const name = getVariableName(() => myVar); // "myVar"
+ * ```
+ */
 export function getVariableName<TResult>(getVar: () => TResult): string | undefined {
     const m = /\(\)=>(.*)/.exec(getVar.toString().replaceAll(/(\r\n|\n|\r|\s)/gm, ''));
 
